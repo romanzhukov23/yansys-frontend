@@ -4,15 +4,10 @@ import {Login} from "./pages/Yansys/Login";
 import {AppShell} from "./pages/Yansys/AppShell/AppShell";
 import {TheoryStudy} from "./pages/Yansys/TheoryStudy";
 import {ProtectedRoute} from "./auth/ProtectedRoute";
-import {Main} from "./pages/Practice/Main";
-import {AppHeader} from "./pages/Practice/AppHeader";
-import {Forum} from "./pages/Practice/Forum";
-import {ForumLogin} from "./pages/Practice/ForumLogin";
-import {Theory} from "./pages/Max/Theory/Theory";
-import {Test} from "./pages/Max/Test/Test";
-import {Login as MaxLogin} from "./pages/Max/MaxLogin";
-import {AppShell as MaxAppShell} from "./pages/Max/MaxAppShell/AppShell";
-import {MaxProtectedRoute} from "./auth/MaxProtectedRoute";
+import {Main} from "./pages/AnalyticTradingPlatform/Main";
+import {AppHeader} from "./pages/AnalyticTradingPlatform/AppHeader";
+import {Forum} from "./pages/AnalyticTradingPlatform/Forum";
+import {ForumLogin} from "./pages/AnalyticTradingPlatform/ForumLogin";
 
 const AppRoutes = () => (
 	<Router>
@@ -27,11 +22,6 @@ const AppRoutes = () => (
 			<Route path='/practice' element={<ProtectedRoute><AppHeader /></ProtectedRoute>}>
 				<Route path='/practice/forum' element={<Forum />}/>
 				<Route path='/practice/agregator' element={<Main />}/>
-			</Route>
-			<Route path="/max/login" element={<MaxLogin />}/>
-			<Route path='/max' element={<MaxProtectedRoute><MaxAppShell /></MaxProtectedRoute>}>
-				<Route path='/max/theory' element={<MaxProtectedRoute><Theory /></MaxProtectedRoute>}/>
-				<Route path='/max/test' element={<MaxProtectedRoute><Test /></MaxProtectedRoute>}/>
 			</Route>
 		</Routes>
 	</Router>
