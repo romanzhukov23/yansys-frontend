@@ -1,35 +1,8 @@
-import {Table} from "../../../shared/ui/tables";
-import {Submit, TextField} from "../../../shared/ui";
+import {Submit, TextField, Table} from "../../../shared/ui";
 import {SetStateAction, useEffect, useState} from "react";
 import axios from "axios";
-import {GRAPHQL_URL} from "../../URL";
-
-type Row = {
-	id: string;
-	instrument: string;
-	price: string;
-	ema: string;
-	macd: string;
-	signalMacd: string;
-	// rsi: string;
-}
-
-type Filters = {
-	title: string;
-	min: string;
-	max: string;
-}
-
-type SearchFilters = {
-	min: string;
-	max: string;
-}
-
-type Column = {
-	name: "id" | "instrument" | "price" | "ema" | "macd" | "signalMacd"; //| "rsi";
-	title: string;
-	width: string;
-}
+import {GRAPHQL_URL} from "../../../shared/URL";
+import {Row, Filters, SearchFilters, Column} from "../../../shared/types";
 
 export function Main() {
 	const [activeTicker, setActive] = useState<Row>({

@@ -1,9 +1,8 @@
 import {Navigate} from "react-router-dom";
 import {useState} from "react";
-import {TextEditor} from "../../../shared/ui/forms/TextEditor";
-import {Submit} from "../../../shared/ui";
+import {Submit, TextEditor} from "../../../shared/ui";
 import axios from "axios";
-import {GRAPHQL_URL} from "../../URL";
+import {GRAPHQL_URL} from "../../../shared/URL";
 
 export function TheoryStudy() {
 	const [divs] = useState([

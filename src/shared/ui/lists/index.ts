@@ -1,3 +1,5 @@
 export * from './TickerData'
 export * from './TickerList'
 export * from './ActiveTicker'
+export * from './ForumItem'
+export * from './ForumList'

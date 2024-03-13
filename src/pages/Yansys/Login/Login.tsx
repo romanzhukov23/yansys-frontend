@@ -1,10 +1,9 @@
 import {useNavigate} from "react-router-dom";
 import {useState} from "react";
-import {Submit, TextField} from "../../../shared/ui";
+import {Submit, TextField, Radio} from "../../../shared/ui";
 import axios from "axios";
-import {GRAPHQL_URL} from "../../URL";
-import {Radio} from "../../../shared/ui/forms/Radio";
-import {f} from "../../texts";
+import {GRAPHQL_URL} from "../../../shared/URL";
+import {f} from "../../../shared/texts";
 
 function Login() {
 	const navigate = useNavigate();

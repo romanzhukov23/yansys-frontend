@@ -1,10 +1,9 @@
 import {Checkbox, Submit, TextField} from "../../../shared/ui";
 import {useState} from "react";
-import {Radio} from "../../../shared/ui/forms/Radio";
+import {Radio, TextEditor} from "../../../shared/ui";
 import axios from "axios";
-import {GRAPHQL_URL} from "../../URL";
+import {GRAPHQL_URL} from "../../../shared/URL";
 import {Navigate} from "react-router-dom";
-import {TextEditor} from "../../../shared/ui/forms/TextEditor";
 
 function CheckYourself() {
 

@@ -1,16 +1,8 @@
-import {TextEditor} from "../../../shared/ui/forms/TextEditor";
 import {useEffect, useState} from "react";
-import {Submit} from "../../../shared/ui";
+import {Submit, ForumList, TextEditor} from "../../../shared/ui";
 import axios from "axios";
-import {GRAPHQL_URL} from "../../URL";
-
-export interface Post {
-	id: number;
-	nickname: string;
-	text: string;
-	date: string;
-	isEditing: boolean;
-}
+import {GRAPHQL_URL} from "../../../shared/URL";
+import { Post } from "shared/interfaces/Post";
 
 export function Forum(): JSX.Element {
 	const [newPost, setNewPost] = useState('');
@@ -114,25 +106,6 @@ export function Forum(): JSX.Element {
 			<Submit color='bg-[#06b6d4]' onClick={handleSendClick} label='Отправить'/>
 		</div>
 
-		{posts.map((p): JSX.Element => (
-			<div className='m-3 w-[80vw] bg-gray-400 p-4 rounded-2xl flex'>
-				<div>
-					<div className='flex mb-2 w-[74vw]'>
-						<div className='mr-3 text-sm'>{`#${p.id}`}</div>
-						<div className='text-2xl'>{p.nickname}</div>
-						<div className='ml-auto'>{new Date(p.date).toString()}</div>
-					</div>
-					<div className='ml-4'>{p.text}</div>
-				</div>
-				{p.nickname === localStorage.getItem('nickname') ? <div className='flex flex-row ml-auto'>
-					<Submit onClick={() => handleEditClick(p)} className='h-10 w-10'>
-						<img src="/images/editing.png" className='pointer-events-none w-5 h-5' alt="edit"/>
-					</Submit>
-					<Submit onClick={() => handleDeleteClick(p)} className='h-10 w-10'>
-						<img src="/images/x.png" className='pointer-events-none w-5 h-5' alt="delete"/>
-					</Submit>
-				</div> : <div></div>}
-			</div>
-		))}
+		<ForumList posts={posts} handleDeleteClick={handleDeleteClick} handleEditClick={handleEditClick}/>
 	</div>)
 }
