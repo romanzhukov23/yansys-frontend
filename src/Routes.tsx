@@ -17,7 +17,6 @@ const AppRoutes = () => (
 				<Route path='checkyourself' element={<ProtectedRoute><CheckYourself /></ProtectedRoute>} />
 				<Route path='theorystudy' element={<ProtectedRoute><TheoryStudy /></ProtectedRoute>} />
 			</Route>
-			<Route path='/practice' element={<Main />}/>
 			<Route path="/practice/login" element={<ForumLogin />}/>
 			<Route path='/practice' element={<ProtectedRoute><AppHeader /></ProtectedRoute>}>
 				<Route path='/practice/forum' element={<Forum />}/>

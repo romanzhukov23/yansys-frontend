@@ -7,7 +7,6 @@ export const ForumItem = ({post, deleteClick, editClick}: {post: Post, deleteCli
 		<div className='m-3 w-[80vw] bg-gray-400 p-4 rounded-2xl flex'>
 			<div>
 				<div className='flex mb-2 w-[74vw]'>
-					<div className='mr-3 text-sm'>{`#${post.id}`}</div>
 					<div className='text-2xl'>{post.nickname}</div>
 					<div className='ml-auto'>{new Date(post.date).toString()}</div>
 				</div>

@@ -1,8 +1,4 @@
-# Romazhukov23's Analytic Trading Platform and Yansys (simple education platform) frontend projects in 1
-
-## Go to "/practice" path for Analytic Trading Platform and to "/" path for Yansys
-
-## |||||||||||||||||||||||||||||||||||||
+# Romazhukov23's Analytic Trading Platform frontend project
 
 ## Available Scripts
 

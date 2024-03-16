@@ -33,10 +33,7 @@ function ForumLogin() {
 
 	return (
 		<div className='flex flex-col justify-center items-center'>
-			<div className="flex center items-center mt-[11vh] mb-[7vh]">
-				<img className='w-[32vw] h-[18vw]' src='/images/logo192.png' alt="logo"/>
-			</div>
-			<div className="flex flex-col justify-center mb-[5vh]">
+			<div className="flex flex-col justify-center mb-[5vh] mt-[30vh]">
 				<LoginTextField label="Никнейм" state={nickname} setState={setNickname}/>
 				<LoginTextField label="Пароль" state={password} setState={setPassword}/>
 			</div>
