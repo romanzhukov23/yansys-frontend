@@ -1,27 +1,21 @@
-import {BrowserRouter as Router, Route, Routes,} from 'react-router-dom'
-import {CheckYourself} from "./pages/Yansys/CheckYourself";
-import {Login} from "./pages/Yansys/Login";
-import {AppShell} from "./pages/Yansys/AppShell/AppShell";
-import {TheoryStudy} from "./pages/Yansys/TheoryStudy";
+import {BrowserRouter as Router, Navigate, Route, Routes,} from 'react-router-dom'
 import {ProtectedRoute} from "./auth/ProtectedRoute";
-import {Main} from "./pages/AnalyticTradingPlatform/Main";
+import {Home} from "./pages/AnalyticTradingPlatform/Home";
 import {AppHeader} from "./pages/AnalyticTradingPlatform/AppHeader";
-import {Forum} from "./pages/AnalyticTradingPlatform/Forum";
-import {ForumLogin} from "./pages/AnalyticTradingPlatform/ForumLogin";
+import {AggregatorLogin} from "./pages/AnalyticTradingPlatform/AggregatorLogin";
+import {Profile} from "./pages/AnalyticTradingPlatform/Profile";
+import {Stock} from "./pages/AnalyticTradingPlatform/Stock";
 
 const AppRoutes = () => (
 	<Router>
 		<Routes>
-			<Route path="/login" element={<Login />}/>
-			<Route path="/" element={<ProtectedRoute><AppShell /></ProtectedRoute>}>
-				<Route path='checkyourself' element={<ProtectedRoute><CheckYourself /></ProtectedRoute>} />
-				<Route path='theorystudy' element={<ProtectedRoute><TheoryStudy /></ProtectedRoute>} />
+			<Route path="/login" element={<AggregatorLogin />}/>
+			<Route path='/' element={<AppHeader />}>
+				<Route path='/home' element={<Home />}/>
+				<Route path='/stocks/:ticker' element={<Stock />}/>
+				<Route path='/profile' element={<ProtectedRoute><Profile /></ProtectedRoute>}/>
 			</Route>
-			<Route path="/practice/login" element={<ForumLogin />}/>
-			<Route path='/practice' element={<ProtectedRoute><AppHeader /></ProtectedRoute>}>
-				<Route path='/practice/forum' element={<Forum />}/>
-				<Route path='/practice/agregator' element={<Main />}/>
-			</Route>
+			<Route path="*" element={<Navigate to={"/home"} />}/>
 		</Routes>
 	</Router>
 )

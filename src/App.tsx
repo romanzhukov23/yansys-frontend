@@ -1,5 +1,7 @@
 import AppRoutes from "./Routes"
 import {createClient, Provider} from 'urql'
+import { PrimeReactProvider } from 'primereact/api';
+
 
 const client = createClient({
 	url: 'http://localhost:3334/graphql',
@@ -7,9 +9,11 @@ const client = createClient({
 
 function App() {
 	return (
-		<Provider value={client}>
-			<AppRoutes/>
-		</Provider>
+		<PrimeReactProvider>
+			<Provider value={client}>
+				<AppRoutes/>
+			</Provider>
+		</PrimeReactProvider>
 	)
 }
 

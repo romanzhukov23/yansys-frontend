@@ -1,11 +1,17 @@
 import {Submit, TextField, Table} from "../../../shared/ui";
-import {SetStateAction, useEffect, useState} from "react";
+import {SetStateAction, useEffect, useMemo, useState} from "react";
 import axios from "axios";
 import {GRAPHQL_URL} from "../../../shared/URL";
-import {Row, Filters, SearchFilters, Column} from "../../../shared/types";
+import {Row, Filters, SearchFilters, Column as ColumnType} from "../../../shared/types";
+import {SortForm} from "../../../shared/ui/forms/SortForm";
+import {DataTable} from "primereact/datatable";
+import {Column} from "primereact/column"
+import {Card} from "primereact/card";
+import {useNavigate} from "react-router-dom";
 
-export function Main() {
-	const [activeTicker, setActive] = useState<Row>({
+export function Home() {
+	const navigate = useNavigate();
+	const [, setActive] = useState<Row>({
 		ema: "",
 		id: "",
 		instrument: "",
@@ -23,7 +29,7 @@ export function Main() {
 
 	const [indicatorsLoading, setIndicatorsLoading] = useState(false);
 
-	const [columns] = useState<Column[]>([
+	const [columns] = useState<ColumnType[]>([
 		{name: 'id', title: '№', width: 'w-[3vw]'},
 		{name: 'instrument', title: 'Акция', width: 'w-[6vw]'},
 		{name: 'price', title: 'Цена', width: 'w-[8vw]'},
@@ -158,79 +164,41 @@ export function Main() {
 		console.log(rows)
 	}
 
-	return <div className='m-[2vw] flex gap-4'>
-		{indicatorsLoading ? <div
-				className='text-xl flex justify-center items-center w-[19vw] bg-gray-200 p-4 rounded-xl shadow-2xl'>Загрузка...</div> :
-			<div className='text-xl flex flex-col w-[19vw] bg-gray-200 p-4 rounded-xl shadow-2xl'>
-				<div className='self-center text-4xl'>{activeTicker.instrument.toString()}</div>
-				<div className='flex'>
-					<div className='pt-1 self-start '>Цена:</div>
-					<div className='pt-1 self-start ml-auto'>{activeTicker.price.toString()}</div>
-				</div>
-				<div className='flex'>
-					<div className='pt-1 self-start '>EMA:</div>
-					<div className='pt-1 self-start ml-auto'>{activeTicker.ema.toString()}</div>
-				</div>
-				<div className='flex'>
-					<div className='pt-1 self-start '>От линии тренда на:</div>
-					<div
-						className='pt-1 self-start ml-auto'>{(parseFloat(activeTicker.price) * 100 / parseFloat(activeTicker.ema) - 100).toFixed(2)}%
-					</div>
-				</div>
-				<div className='flex'>
-					<div className='pt-1 self-start '>MACD:</div>
-					<div className='pt-1 self-start ml-auto'>{activeTicker.macd.toString()}</div>
-				</div>
-				<div className='flex'>
-					<div className='pt-1 self-start '>sgl MACD:</div>
-					<div className='pt-1 self-start ml-auto'>{activeTicker.signalMacd.toString()}</div>
-				</div>
-				<div className='flex flex-row justify-center items-center content-center'>
-					<div className='flex pt-1 self-start '>Разница MACD и сигнальной MACD:</div>
-					<div className='flex pt-1 ml-auto justify-center content-center items-center'>{(parseFloat(activeTicker.macd) - parseFloat(activeTicker.signalMacd)).toFixed(2).toString()}</div>
-				</div>
-				{/*<div className='flex'>*/}
-				{/*	<div className='pt-1 self-start '>RSI:</div>*/}
-				{/*	<div className='pt-1 self-start ml-auto'>{activeTicker.rsi.toString()}</div>*/}
-				{/*</div>*/}
-			</div>}
+	// const filteredRows = useMemo(
+	// 	() => {
+	// 		if ()
+	// 	},[searchFilters]
+	// )
 
-		{indicatorsLoading ? <div
-				className='flex justify-center items-center text-2xl w-[60vw] bg-gray-200 p-4 rounded-xl shadow-2xl'>Загрузка...</div> :
-			<Table className='text-2xl w-[60vw] bg-gray-200 p-4 rounded-xl shadow-2xl' columns={columns} data={rows}
-			       selectActive={(activeTicker: SetStateAction<Row>) => setActive(activeTicker)}/>}
+	return <div className='mx-8 mt-3 flex justify-content-center gap-4'>
+		<Card className='max-h-50rem min-w-50rem'>
+			{indicatorsLoading
+			?
+				'Загрузка...'
+			:
+				<DataTable
+					value={rows}
+					scrollable
+					scrollHeight='48rem'
+					style={{ minWidth: '60rem' }}
+					onRowClick={(event) => navigate('/')}
+				>
+					{columns.map((col, i) =>
+						<Column field={col.name} header={col.title} key={i} />
+					)}
+				</DataTable>
+			}
+		</Card>
 
-		<div className='flex gap-[2vh] w-[19vw] flex-col bg-gray-200 p-3 rounded-xl shadow-2xl'>
-			<h1 className='text-xl'>Поиск по инструменту</h1>
-			<TextField className='p-2' text='2xl' height='[5vh]' width='[12vw]'
-			           onChange={(evt): void => setInstrument(evt.target.value)} value={instrument}/>
-
-			<h1 className='text-xl'>Поиск по фильтрам</h1>
-			{indicatorsLoading ? <div>Загрузка...</div> : <div>
-				{filters.map((f, index) => <div className='py-3 flex items-center gap-2'>
-					<p className='text-lg w-[2vw] mr-0.5'>{f.title}</p>
-					<div className='flex gap-2 ml-auto items-center'>
-						<TextField className='p-1' text='base' width='[6vw]' onChange={(evt): void => {
-							setSF(evt.target.value, index, 'min');
-							console.log(evt.target.value)
-						}}
-						           placeholder={f.min !== null ? f.min : '0'}
-						           value={parseFloat(searchFilters[index].min).toFixed(2).toString()}/>
-						<p className='text-base'>—</p>
-						<TextField className='p-1' text='base' width='[6vw]' onChange={(evt): void => {
-							setSF(evt.target.value, index, 'max');
-							console.log(evt.target.value)
-						}}
-						           placeholder={f.max} value={parseFloat(searchFilters[index].max).toFixed(2).toString()}/>
-					</div>
-
-				</div>)}
-			</div>}
-
-			<Submit color='bg-[#06b6d4]' className='rounded-lg h-[4vh] w-[7vw] bg-gray-400' onClick={handleSubmitClick} label='ПОИСК'/>
-		</div>
+			<SortForm indicatorsLoading={indicatorsLoading} instrument={instrument} setInstrument={setInstrument} filters={filters} searchFilters={searchFilters} setSF={setSF}/>
 	</div>
 }
+
+// <Table className='text-2xl w-[60vw] bg-gray-200 p-4 rounded-xl shadow-2xl' columns={columns} data={rows}
+// 	   selectActive={(activeTicker: SetStateAction<Row>) => setActive(activeTicker)}/>
+
+
+
 
 
 //
@@ -241,7 +209,7 @@ export function Main() {
 // import {GRAPHQL_URL} from "../URL";
 // import {ActiveTicker, TickerList} from "../../shared/ui/lists";
 //
-// export class Main extends Component {
+// export class Home extends Component {
 // 	// @ts-ignore
 // 	constructor(props) {
 // 		super(props);

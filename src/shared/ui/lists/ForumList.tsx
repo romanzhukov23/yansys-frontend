@@ -3,6 +3,10 @@ import {ForumItem} from "./ForumItem";
 import {Post} from "../../interfaces/Post";
 
 export const ForumList = ({posts, handleDeleteClick, handleEditClick}: {posts: Post[], handleEditClick: (post: Post) => void, handleDeleteClick: (post: Post) => void}) => {
+	if (!posts.length) {
+		return (<div>Будьте первым!</div>)
+	}
+
 	return (
 		<div>
 			{posts.map((p): JSX.Element => (

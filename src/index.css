@@ -1,18 +1,13 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'primereact/resources/themes/lara-light-blue/theme.css' layer(primereact);
+@import 'primeflex/primeflex.css' layer(primeflex);
 
-@layer base {
-    html{
-        @apply h-full w-full
-    }
+@layer tailwind-base, primereact, primeflex, tailwind-utilities;
 
-    body {
-        @apply w-full h-full font-body antialiased bg-slate-50 text-black/70 text-[13px] bg-white
-    }
-
-    /*#root {*/
-    /*  @apply flex flex-col*/
-    /*}*/
+@layer tailwind-base {
+    @tailwind base;
 }
 
+@layer tailwind-utilities {
+    @tailwind components;
+    @tailwind utilities;
+}
