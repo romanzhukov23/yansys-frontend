@@ -5,6 +5,7 @@ import {AppHeader} from "./pages/AnalyticTradingPlatform/AppHeader";
 import {AggregatorLogin} from "./pages/AnalyticTradingPlatform/AggregatorLogin";
 import {Profile} from "./pages/AnalyticTradingPlatform/Profile";
 import {Stock} from "./pages/AnalyticTradingPlatform/Stock";
+import {Favorites} from "./pages/AnalyticTradingPlatform/Favorites";
 
 const AppRoutes = () => (
 	<Router>
@@ -12,6 +13,7 @@ const AppRoutes = () => (
 			<Route path="/login" element={<AggregatorLogin />}/>
 			<Route path='/' element={<AppHeader />}>
 				<Route path='/home' element={<Home />}/>
+				<Route path='/favorites' element={<Favorites />}/>
 				<Route path='/stocks/:ticker' element={<Stock />}/>
 				<Route path='/profile' element={<ProtectedRoute><Profile /></ProtectedRoute>}/>
 			</Route>

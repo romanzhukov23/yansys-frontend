@@ -6,7 +6,7 @@ import {InputText} from "primereact/inputtext";
 
 export function Profile() {
     const [passVis, setPassVis] = useState(false);
-    const [pass, setPass] = useState(localStorage.getItem('password'));
+    const [pass] = useState(localStorage.getItem('password'));
     const [dialogVis, setDialogVis] = useState(false);
     const [dialogPass, setDialogPass] = useState(localStorage.getItem('password'));
 
@@ -16,8 +16,8 @@ export function Profile() {
             <div className='m-4'>Username: {localStorage.getItem('username')}</div>
             <div className='m-4 flex'>
                 <div className='w-15rem'>Password: {passVis ? pass !== null ? pass : '' : '******'}</div>
-                <Button className='pi pi-eye' onClick={() => setPassVis(!passVis)} />
-                <Button icon='pi pi-pencil' onClick={() => setDialogVis(true)} />
+                <Button icon='pi pi-eye' onClick={() => setPassVis(!passVis)} style={{ backgroundColor: '#ffffff', color: '#4b5563', border: 0, height: '16px', width: '16px', marginRight: '8px'}}/>
+                <Button icon='pi pi-pencil' onClick={() => setDialogVis(true)} style={{ backgroundColor: '#ffffff', color: '#4b5563', border: 0, height: '16px', width: '16px'}}/>
                 <BaseEditDialog header='Изменение пароля' visible={dialogVis} setVisible={setDialogVis}
                                 onCancel={() => {
                                     setDialogPass(localStorage.getItem('password'));

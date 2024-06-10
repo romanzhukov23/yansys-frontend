@@ -7,5 +7,5 @@ type Props = {
 
 export function ProtectedRoute({children}: Props): JSX.Element {
 	const location = useLocation()
-	return isAuthenticated() ? children : <Navigate to="/login" state={{from: location}} replace/>
+	return isAuthenticated() ? children : <Navigate to="/home" state={{from: location}} replace/>
 }

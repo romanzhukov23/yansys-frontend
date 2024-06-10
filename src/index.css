@@ -1,13 +1,13 @@
 @import 'primereact/resources/themes/lara-light-blue/theme.css' layer(primereact);
 @import 'primeflex/primeflex.css' layer(primeflex);
 
-@layer tailwind-base, primereact, primeflex, tailwind-utilities;
+/*@layer tailwind-base, primereact, primeflex, tailwind-utilities;*/
 
-@layer tailwind-base {
-    @tailwind base;
-}
+/*@layer tailwind-base {*/
+/*    @tailwind base;*/
+/*}*/
 
-@layer tailwind-utilities {
-    @tailwind components;
-    @tailwind utilities;
-}
+/*@layer tailwind-utilities {*/
+/*    @tailwind components;*/
+/*    @tailwind utilities;*/
+/*}*/

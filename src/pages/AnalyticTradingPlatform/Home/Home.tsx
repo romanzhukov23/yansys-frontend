@@ -1,31 +1,40 @@
-import {Submit, TextField, Table} from "../../../shared/ui";
-import {SetStateAction, useEffect, useMemo, useState} from "react";
+import React, {useEffect, useState} from "react";
 import axios from "axios";
 import {GRAPHQL_URL} from "../../../shared/URL";
-import {Row, Filters, SearchFilters, Column as ColumnType} from "../../../shared/types";
-import {SortForm} from "../../../shared/ui/forms/SortForm";
-import {DataTable} from "primereact/datatable";
+import {Row, Column as ColumnType} from "../../../shared/types";
+import {DataTable, DataTableFilterMeta} from "primereact/datatable";
 import {Column} from "primereact/column"
 import {Card} from "primereact/card";
 import {useNavigate} from "react-router-dom";
+import {IconField} from "primereact/iconfield";
+import {InputIcon} from "primereact/inputicon";
+import {InputText} from "primereact/inputtext";
+import {FilterMatchMode} from "primereact/api";
+import {Slider, SliderChangeEvent} from "primereact/slider";
 
 export function Home() {
 	const navigate = useNavigate();
-	const [, setActive] = useState<Row>({
-		ema: "",
-		id: "",
-		instrument: "",
-		macd: "",
-		price: "",
-		signalMacd: "",
-		// rsi: "",
-	})
 
-	const [filters, setFilters] = useState<Filters[]>([]);
-	const [searchFilters, setSearchFilters] = useState<SearchFilters[]>([]);
-	const [initRows, setInitRows] = useState<Row[]>([]);
+	const [filters, setFilters] = useState<DataTableFilterMeta>({
+		global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+		instrument: { value: null, matchMode: FilterMatchMode.CONTAINS },
+		price: { value: null, matchMode: FilterMatchMode.BETWEEN },
+		ema: { value: null, matchMode: FilterMatchMode.BETWEEN },
+		macd: { value: null, matchMode: FilterMatchMode.BETWEEN },
+		signalMacd: { value: null, matchMode: FilterMatchMode.BETWEEN },
+	});
+
 	const [rows, setRows] = useState<Row[]>([]);
-	const [instrument, setInstrument] = useState('');
+	const [priceFilter, setPriceFilter] = useState<[number, number]>();
+	const [emaFilter, setEmaFilter] = useState<[number, number]>();
+	const [macdFilter, setMacdFilter] = useState<[number, number]>();
+	const [signalMacdFilter, setSignalMacdFilter] = useState<[number, number]>();
+	const [bounds, setBounds] = useState<{min: number, max: number}[]>();
+	const [globalFilterValue, setGlobalFilterValue] = useState<string>('');
+
+	const fixFormat = (value: number) => {
+		return value.toFixed(2).toString();
+	}
 
 	const [indicatorsLoading, setIndicatorsLoading] = useState(false);
 
@@ -43,225 +52,183 @@ export function Home() {
 		const fetchIndicators = async () => {
 			setIndicatorsLoading(true);
 
-			// const importQuotesQuery = {
-			// 	"query": `mutation {importQuotes }`
-			// };
-			//
-			// const quotes = await axios.post(GRAPHQL_URL, importQuotesQuery).then(q => q.data.data.importQuotesQuery);
-			//
-			// console.log(quotes);
-
 			const indicators: {
-				AllArray: any;
+				price: {close: number, time: Date}
+				ema: {value: number, time: Date};
+				macd: {value: number, time: Date};
+				signal_macd: {value: number, time: Date};
 				ticker: string;
 			}[] = []
 
 			const getIndicatorsQuery = {
-				"query": `query { getIndicators { ticker AllArray { price time ema macd signalMacd } period } }`
+				"query": `query { getLastIndicators { ticker price { close time } ema { value time } macd { value time } signal_macd { value time } } }`
 			}
 
 			axios.post(GRAPHQL_URL, getIndicatorsQuery).then(
 				r => {
-					indicators.push(...r.data.data.getIndicators);
-					setInitRows(indicators.map((indicator, index) => ({
-						id: (index + 1).toString(),
-						instrument: indicator.ticker,
-						price: indicator.AllArray[indicator.AllArray.length - 1].price.toFixed(2).toString(),
-						ema: indicator.AllArray[indicator.AllArray.length - 1].ema.toFixed(2).toString(),
-						macd: indicator.AllArray[indicator.AllArray.length - 1].macd.toFixed(2).toString(),
-						signalMacd: indicator.AllArray[indicator.AllArray.length - 1].signalMacd.toFixed(2).toString(),
-						// rsi: '122',
-					})));
+					indicators.push(...r.data.data.getLastIndicators);
 					setRows(indicators.map((indicator, index) => ({
 						id: (index + 1).toString(),
 						instrument: indicator.ticker,
-						price: indicator.AllArray[indicator.AllArray.length - 1].price.toFixed(2).toString(),
-						ema: indicator.AllArray[indicator.AllArray.length - 1].ema.toFixed(2).toString(),
-						macd: indicator.AllArray[indicator.AllArray.length - 1].macd.toFixed(2).toString(),
-						signalMacd: indicator.AllArray[indicator.AllArray.length - 1].signalMacd.toFixed(2).toString(),
+						price: fixFormat(indicator.price.close),
+						ema: fixFormat(indicator.ema.value),
+						macd: fixFormat(indicator.macd.value),
+						signalMacd: fixFormat(indicator.signal_macd.value),
 						// rsi: '122',
 					})));
-
-					setActive({
-						id: '1',
-						instrument: indicators[0].ticker,
-						price: indicators[0].AllArray[indicators[0].AllArray.length - 1].price.toFixed(2).toString(),
-						ema: indicators[0].AllArray[indicators[0].AllArray.length - 1].ema.toFixed(2).toString(),
-						macd: indicators[0].AllArray[indicators[0].AllArray.length - 1].macd.toFixed(2).toString(),
-						signalMacd: indicators[0].AllArray[indicators[0].AllArray.length - 1].signalMacd.toFixed(2).toString(),
-						// rsi: "122",
-					})
-
-					let tempFilters: { title: string, min: string, max: string }[] = [];
-
-					const ema = indicators.map(i => parseFloat(i.AllArray[i.AllArray.length - 1].ema))
-					const prices = indicators.map(i => parseFloat(i.AllArray[i.AllArray.length - 1].price))
-					const macd = indicators.map(i => parseFloat(i.AllArray[i.AllArray.length - 1].macd))
-					const signalMacd = indicators.map(i => parseFloat(i.AllArray[i.AllArray.length - 1].signalMacd))
-
-					tempFilters.push({title: "Цена", min: Math.min(...prices).toString(), max: Math.max(...prices).toString()});
-					tempFilters.push({title: "EMA", min: Math.min(...ema).toString(), max: Math.max(...ema).toString()});
-					tempFilters.push({title: "MACD", min: Math.min(...macd).toString(), max: Math.max(...macd).toString()});
-					tempFilters.push({
-						title: "sgl MACD",
-						min: Math.min(...signalMacd).toString(),
-						max: Math.max(...signalMacd).toString()
+					let prices: number[] = [];
+					let emas: number[] = [];
+					let macds: number[] = [];
+					let signalMacds: number[] = [];
+					indicators.map(indicator => {
+						prices.push(indicator.price.close);
+						emas.push(indicator.ema.value);
+						macds.push(indicator.macd.value);
+						signalMacds.push(indicator.signal_macd.value);
 					});
 
-					setFilters(tempFilters)
-					setSearchFilters(tempFilters.map(f => (
-						{min: f.min, max: f.max}
-					)))
+					setPriceFilter([Math.min(...prices), Math.max(...prices)]);
+					setEmaFilter([Math.min(...emas), Math.max(...emas)]);
+					setMacdFilter([Math.min(...macds), Math.max(...macds)]);
+					setSignalMacdFilter([Math.min(...signalMacds), Math.max(...signalMacds)])
+					setBounds([
+						{min: Math.min(...prices), max: Math.max(...prices)},
+						{min: Math.min(...emas), max: Math.max(...emas)},
+						{min: Math.min(...macds), max: Math.max(...macds)},
+						{min: Math.min(...signalMacds), max: Math.max(...signalMacds)},
+					]);
+
+					setIndicatorsLoading(false);
 				}
 			);
-
-			setIndicatorsLoading(false);
 		}
 
 		fetchIndicators();
 	}, []);
 
-	const setSF = (newstr: string, i: number, type: 'min' | 'max'): void => {
-		let tempFilters: { min: string, max: string }[] = []
-		for (let j = 0; j < searchFilters.length; j++) {
-			if (j !== i) {
-				tempFilters[j] = searchFilters[j];
-			} else {
-				tempFilters[j] = type === 'min' ? {min: newstr, max: searchFilters[j].max} : {
-					max: newstr,
-					min: searchFilters[j].min
-				};
-			}
-		}
-		setSearchFilters(tempFilters);
+	const onGlobalFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const value = e.target.value;
+		let _filters = { ...filters };
+		// @ts-ignore
+		_filters['instrument'].value = value;
+		setFilters(_filters);
+		setGlobalFilterValue(value);
+	};
+	const onPriceFilterChange = (value: [number, number]) => {
+		let _filters = { ...filters }
+		// @ts-ignore
+		_filters['price'].value = value;
+		setFilters(_filters);
+		setPriceFilter(value);
+	}
+	const onEmaFilterChange = (value: [number, number]) => {
+		let _filters = { ...filters }
+		// @ts-ignore
+		_filters['ema'].value = value;
+		setFilters(_filters);
+		setEmaFilter(value);
+	}
+	const onMacdFilterChange = (value: [number, number]) => {
+		let _filters = { ...filters }
+		// @ts-ignore
+		_filters['macd'].value = value;
+		setFilters(_filters);
+		setMacdFilter(value);
+	}
+	const onSignalMacdFilterChange = (value: [number, number]) => {
+		let _filters = { ...filters }
+		// @ts-ignore
+		_filters['signalMacd'].value = value;
+		setFilters(_filters);
+		setSignalMacdFilter(value);
 	}
 
-	const handleSubmitClick = (): void => {
-		console.log(instrument.toUpperCase())
-		const search = instrument.toUpperCase()
-		const newRows = []
-		for (const row of initRows) {
-			// &&
-			// 	parseFloat(row.rsi) >= parseFloat(searchFilters[1].min) &&
-			// 	parseFloat(row.rsi) <= parseFloat(searchFilters[1].max) &&
-			// 	parseFloat(row.macd) >= parseFloat(searchFilters[3].min) &&
-			// 	parseFloat(row.macd) <= parseFloat(searchFilters[3].max)
-			if (
-				parseFloat(row.price) >= parseFloat(searchFilters[0].min) &&
-				parseFloat(row.price) <= parseFloat(searchFilters[0].max) &&
-				parseFloat(row.ema) >= parseFloat(searchFilters[1].min) &&
-				parseFloat(row.ema) <= parseFloat(searchFilters[1].max) &&
-				parseFloat(row.macd) >= parseFloat(searchFilters[2].min) &&
-				parseFloat(row.macd) <= parseFloat(searchFilters[2].max) &&
-				parseFloat(row.signalMacd) >= parseFloat(searchFilters[3].min) &&
-				parseFloat(row.signalMacd) <= parseFloat(searchFilters[3].max) &&
-				row.instrument.includes(search)) {
-				console.log(row.price >= searchFilters[0].min, row.price <= searchFilters[0].max)
-				newRows.push(row)
-			}
-		}
-		setRows(newRows)
-		console.log(rows)
-	}
-
-	// const filteredRows = useMemo(
-	// 	() => {
-	// 		if ()
-	// 	},[searchFilters]
-	// )
+	const renderHeader = () => {
+		return (
+			<div className="flex justify-content-end">
+				<IconField iconPosition="left">
+					<InputIcon className="pi pi-search" />
+					<InputText value={globalFilterValue} onChange={onGlobalFilterChange} placeholder="Акция" />
+				</IconField>
+			</div>
+		);
+	};
+	const header = renderHeader();
 
 	return <div className='mx-8 mt-3 flex justify-content-center gap-4'>
-		<Card className='max-h-50rem min-w-50rem'>
-			{indicatorsLoading
-			?
-				'Загрузка...'
-			:
+		<Card className='border-round-2xl shadow-4'>
 				<DataTable
+					header={header}
+					globalFilterFields={['instrument', 'price']}
+					filters={filters}
+					loading={indicatorsLoading}
+					emptyMessage="Акции не найдены"
 					value={rows}
 					scrollable
-					scrollHeight='48rem'
+					selectionMode="single"
+					scrollHeight='44rem'
 					style={{ minWidth: '60rem' }}
-					onRowClick={(event) => navigate('/')}
+					onRowClick={(event) => navigate(`/stocks/${event.data.instrument}`)}
 				>
 					{columns.map((col, i) =>
 						<Column field={col.name} header={col.title} key={i} />
 					)}
 				</DataTable>
+		</Card>
+		<Card className='border-round-2xl shadow-4' title='Фильтры'>
+			{priceFilter && <div className="w-16rem">
+				<div className="font-semibold mb-2">Цена</div>
+				<InputText value={priceFilter[0].toFixed(3).toString()}
+						   onChange={(e: React.ChangeEvent<HTMLInputElement>) => onPriceFilterChange([parseInt(e.target.value), priceFilter[1]])}
+						   className="w-8rem"/>
+				<InputText value={priceFilter[1].toString()}
+						   onChange={(e: React.ChangeEvent<HTMLInputElement>) => onPriceFilterChange([priceFilter[0], parseInt(e.target.value)])}
+						   className="w-8rem"/>
+				{/*// @ts-ignore*/}
+				<Slider onChange={(e: SliderChangeEvent) => onPriceFilterChange(e.value)} min={bounds[0].min} max={bounds[0].max}
+						value={priceFilter} className="w-16rem mt-2" range/>
+			</div>
+			}
+			{emaFilter && <div className="w-16rem mt-5">
+				<div className="font-semibold mb-2">EMA</div>
+				<InputText value={emaFilter[0].toFixed(3).toString()}
+						   onChange={(e: React.ChangeEvent<HTMLInputElement>) => onEmaFilterChange([parseInt(e.target.value), emaFilter[1]])}
+						   className="w-8rem"/>
+				<InputText value={emaFilter[1].toFixed(3).toString()}
+						   onChange={(e: React.ChangeEvent<HTMLInputElement>) => onEmaFilterChange([emaFilter[0], parseInt(e.target.value)])}
+						   className="w-8rem"/>
+				{/*// @ts-ignore*/}
+				<Slider onChange={(e: SliderChangeEvent) => onEmaFilterChange(e.value)} min={bounds[1].min} max={bounds[1].max}
+						 value={emaFilter} className="w-16rem mt-2" range/>
+			</div>
+			}
+			{macdFilter && <div className="w-16rem mt-5">
+				<div className="font-semibold mb-2">MACD</div>
+				<InputText value={macdFilter[0].toFixed(3).toString()}
+						   onChange={(e: React.ChangeEvent<HTMLInputElement>) => onMacdFilterChange([parseInt(e.target.value), macdFilter[1]])}
+						   className="w-8rem"/>
+				<InputText value={macdFilter[1].toFixed(3).toString()}
+						   onChange={(e: React.ChangeEvent<HTMLInputElement>) => onMacdFilterChange([macdFilter[0], parseInt(e.target.value)])}
+						   className="w-8rem"/>
+				{/*// @ts-ignore*/}
+				<Slider onChange={(e: SliderChangeEvent) => onMacdFilterChange(e.value)} min={bounds[2].min} max={bounds[2].max}
+						className="w-16rem mt-2" range value={macdFilter}/>
+			</div>
+			}
+			{signalMacdFilter && <div className="w-16rem mt-5">
+				<div className="font-semibold mb-2">sgl MACD</div>
+				<InputText value={signalMacdFilter[0].toFixed(3).toString()} className="w-8rem"
+						   onChange={(e: React.ChangeEvent<HTMLInputElement>) => onSignalMacdFilterChange([parseInt(e.target.value), signalMacdFilter[1]])}
+						   />
+				<InputText value={signalMacdFilter[1].toFixed(3).toString()} className="w-8rem"
+						   onChange={(e: React.ChangeEvent<HTMLInputElement>) => onSignalMacdFilterChange([signalMacdFilter[0], parseInt(e.target.value)])}
+						   />
+				{/*// @ts-ignore*/}
+				<Slider value={signalMacdFilter} className="w-16rem mt-2" range min={bounds[3].min} max={bounds[3].max}
+				/*// @ts-ignore*/
+						onChange={(e: SliderChangeEvent) => onSignalMacdFilterChange(e.value)}/>
+			</div>
 			}
 		</Card>
-
-			<SortForm indicatorsLoading={indicatorsLoading} instrument={instrument} setInstrument={setInstrument} filters={filters} searchFilters={searchFilters} setSF={setSF}/>
 	</div>
 }
-
-// <Table className='text-2xl w-[60vw] bg-gray-200 p-4 rounded-xl shadow-2xl' columns={columns} data={rows}
-// 	   selectActive={(activeTicker: SetStateAction<Row>) => setActive(activeTicker)}/>
-
-
-
-
-
-//
-//
-// import {Component} from "react";
-// import {Simulate} from "react-dom/test-utils";
-// import axios from "axios";
-// import {GRAPHQL_URL} from "../URL";
-// import {ActiveTicker, TickerList} from "../../shared/ui/lists";
-//
-// export class Home extends Component {
-// 	// @ts-ignore
-// 	constructor(props) {
-// 		super(props);
-// 		this.state = {
-// 			data: null,
-// 			term: '',
-// 			active: 0,
-// 		}
-//
-// 		this.loadData();
-// 	}
-//
-// 	loadData() {
-// 		new Promise((resolve, reject) => {
-// 			const getIndicatorsQuery = {
-// 				"query": `query { getIndicators { ticker priceArray { time value } emaArray { time value } period } }`
-// 			}
-//
-// 			axios.post(GRAPHQL_URL, getIndicatorsQuery).then(r => resolve(r))
-//
-// 		}).then(data => {
-// 			// @ts-ignore
-// 			console.log(data.data.data.getIndicators)
-// 			// @ts-ignore
-// 			this.setState({data: data.data.data.getIndicators.map(t => ({
-// 				instrument: t.instrument,
-// 				price: t.priceArray[-1],
-// 				ema: t.emaArray[-1],
-// 				})
-// 			)});
-// 		})
-// 	}
-//
-// 	// @ts-ignore
-// 	updateData(config) {
-// 		this.setState(config);
-// 	}
-//
-// 	render() {
-// 		return (
-// 			<div className="app container-fluid">
-// 				<div className="row">
-// 					<div className="col-sm-4 col-md-3 col-lg-2">
-// 						{/*@ts-ignore*/}
-// 						<ActiveTicker data={this.state.data} active={this.state.active}/>
-// 					</div>
-// 					<div className="col-sm-8 col-md-9 col-lg-10">
-// 						{/*@ts-ignore*/}
-// 						<TickerList data={this.state.data} update={this.updateData.bind(this)} />
-// 					</div>
-// 				</div>
-// 			</div>
-// 		);
-// 	}
-// }

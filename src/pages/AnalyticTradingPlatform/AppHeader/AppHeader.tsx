@@ -1,4 +1,4 @@
-import {Link, Outlet, useNavigate} from "react-router-dom";
+import {Outlet, useNavigate} from "react-router-dom";
 import {isAuthenticated} from "../../../auth/auth";
 import {Menubar} from "primereact/menubar";
 import {MenuItem} from "primereact/menuitem";
@@ -15,6 +15,7 @@ export function AppHeader(): JSX.Element {
 	const navigate = useNavigate();
 	const [visible, setVisible] = useState<boolean>(false);
 	const [isAuth, setIsAuth] = useState<boolean>(isAuthenticated());
+	const [isInvalid, setIsInvalid] = useState<boolean>(false);
 	const [username, setUsername] = useState('');
 	const [password, setPassword] = useState('');
 
@@ -27,31 +28,37 @@ export function AppHeader(): JSX.Element {
 		{
 			label: 'Избранные',
 			icon: 'pi pi-star',
-			command: () => navigate('/features'),
+			command: () => navigate('/favorites'),
 		}
 	]
 
-	const handleLoginClick = (): void => {
-		localStorage.setItem("username", username)
-		localStorage.setItem("password", password)
-		setIsAuth(true);
-
+	const handleLoginClick = async () => {
 		const graphqlQuery = {
 			"query": `mutation {login (username: "${username}", password: "${password}")}`
 		}
 
-		axios.post(GRAPHQL_URL, graphqlQuery).then(() => {
-			localStorage.setItem("username", username)
-		})
+		return axios.post(GRAPHQL_URL, graphqlQuery).then((res) => {
+			if (res.data.data.login === 'ok') {
+				localStorage.setItem("username", username)
+				localStorage.setItem("password", password)
+				setIsAuth(true);
+				window.location.reload();
+				return 'ok';
+			} else {
+				return 'invalid password';
+			}
+		});
 	};
 
 	const accept = () => {
-		localStorage.clear(); setIsAuth(false)
+		localStorage.clear(); setIsAuth(false); window.location.reload();
 	}
 
 	const confirm = (position: any) => {
 		confirmDialog({
-			message: 'Do you want to sign out?',
+			message: 'Вы уверены, что хотите выйти?',
+			acceptLabel: 'Да',
+			rejectLabel: 'Нет',
 			position,
 			accept,
 		});
@@ -59,13 +66,13 @@ export function AppHeader(): JSX.Element {
 
 	const end = (isAuth ?
 			<div className='flex align-items-center'>
-				<Avatar onClick={() => navigate('/profile')} icon='pi pi-user' style={{ backgroundColor: '#ffffff'}}/>
-				<Button onClick={() => confirm('top-right')} icon='pi pi-sign-out'/>
+				<Avatar onClick={() => navigate('/profile')} icon='pi pi-user' style={{ backgroundColor: '#f9fafb'}}/>
+				<Button onClick={() => confirm('top-right')} icon='pi pi-sign-out' style={{ backgroundColor: '#f9fafb', color: '#4b5563', border: 0}}/>
 				<ConfirmDialog />
 			</div>
 		:
 			<>
-				<Button onClick={() => setVisible(true)} icon='pi pi-sign-in'/>
+				<Button onClick={() => setVisible(true)} icon='pi pi-sign-in' style={{ backgroundColor: '#f9fafb', color: '#4b5563', border: 0}}/>
 				<Dialog
 					visible={visible}
 					modal
@@ -74,23 +81,33 @@ export function AppHeader(): JSX.Element {
 						<div className="flex flex-column px-8 py-5 gap-4 border-round-lg bg-white">
 							<div className='flex flex-column gap-5'>
 								<div className="flex flex-wrap justify-content-center align-items-center gap-2">
-									<label className="w-6rem">Username</label>
+									<label className="w-6rem">Логин</label>
 									<InputText id="username" type="text" className="w-12rem border-1 border-primary-500" value={username} onChange={(evt): void => setUsername(evt.target.value)}/>
 								</div>
-								<div className="flex flex-wrap justify-content-center align-items-center gap-2">
-									<label className="w-6rem">Password</label>
-									<InputText id="password" type="password" className="w-12rem border-1 border-primary-500" value={password} onChange={(evt): void => setPassword(evt.target.value)}/>
+								<div className="flex flex-wrap justify-content-center gap-2 mb-3">
+									<label className="w-6rem">Пароль</label>
+									<div className="flex flex-column">
+										<InputText id="password" type="password" invalid={isInvalid}
+												   className="w-12rem border-1 border-primary-500" value={password}
+												   onChange={(evt): void => setPassword(evt.target.value)}/>
+										<small className='text-red-500'>{isInvalid ? 'Неправильный пароль' : ''}</small>
+									</div>
 								</div>
 							</div>
 							<div className="flex align-items-center gap-2">
-								<Button label="Sign-In"
-										onClick={(e) => {
-											handleLoginClick()
-											hide(e)
+								<Button label="Войти"
+										onClick={async (e) => {
+											const res = await handleLoginClick()
+											if (res === 'ok') {
+												setIsInvalid(false);
+												hide(e)
+											} else {
+												setIsInvalid(true);
+											}
 										}}
 										text
 										className="p-3 w-full text-primary-500 border-1 border-primary-500" />
-								<Button label="Cancel" onClick={(e) => hide(e)} text
+								<Button label="Отмена" onClick={(e) => hide(e)} text
 										className="p-3 w-full text-primary-500 border-1 border-primary-500" />
 							</div>
 						</div>
@@ -100,13 +117,13 @@ export function AppHeader(): JSX.Element {
 	)
 
 	return (
-		<div className="overflow-x-hidden relative h-[100vh] w-[100vw]">
-			<div className="flex flex-col">
-				<div className='z-20 shadow-xl '>
+		<div className="overflow-hidden relative" style={{height: '100vh', width: '100vw'}}>
+			<div className="flex flex-column">
+				<div className='z-20 shadow-4'>
 					<Menubar model={items} end={end}/>
 				</div>
 				<div className="bg-white grow">
-					<Outlet/>
+					<Outlet context={isAuth}/>
 				</div>
 			</div>
 		</div>
